@@ -31,8 +31,7 @@ def main():
 
         elif opcao == 2:
             print("Começe a digitar: ")
-            while True:
-                somaAt = parse()
+            parse()
         elif opcao == 9:
             break;
 
