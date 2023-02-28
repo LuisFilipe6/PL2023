@@ -22,12 +22,11 @@ def main():
             try:
                 ficheiro = open(nomeFicheiro)
 
-                if ficheiro:
-                    parse(ficheiro.readlines())
-                    input("")
+                parse(ficheiro.readlines())
+                input("")
             except Exception:        
                 print("Ficheiro não encontrado")
-                input("Prima uma tecla para continuar....")
+                input("Prima uma tecla para continuar...." + e.getMessage())
 
         elif opcao == 2:
             print("Começe a digitar: ")
@@ -37,8 +36,22 @@ def main():
 
 
 def parse(ficheiro = 0):
-    if ficheiro:
-        print ("Ficheiro")
+    if ficheiro != 0:
+        digitos, off = 0,0
+        for line in ficheiro:
+            texto = line.upper()
+            for elemento in range(0, len(texto)):
+                char = texto[elemento]
+                if char == 'O':
+                    if texto[elemento:elemento+3] == "OFF":
+                        off = 1
+                    if texto[elemento:elemento+2] == "ON":
+                        off = 0
+                if char == "=":
+                    print(digitos)
+                if off == 0:
+                    if 48 <= ord(char) <= 57:
+                        digitos += 1
     else:
         texto = ""
         digitos, off = 0,0
