@@ -1,3 +1,4 @@
+import json
 import os
 import re
 
@@ -26,6 +27,13 @@ def main():
         elif opt == 2:
             primNomes, ultNomes = processaNomesSeculos(ficheiro)
             escreveDict(primNomes, ultNomes)
+        elif opt == 3:
+            procuraRelacionamentos(ficheiro)
+        elif opt == 4:
+            escreveJson(ficheiro)
+        else:
+            print("Número não reconhecido.")
+
 
 
 
@@ -43,7 +51,7 @@ def processaFreqProcessos(ficheiro):
                 anos[ano] += 1
             else:
                 anos[ano] = 1
-    print(anos)
+    pretty_print(anos)
 
 def processaNomesSeculos(ficheiro):
     primeirosNomes = {}
@@ -93,5 +101,37 @@ def escreveDict(prim, ult):
         for i in range(0,5):
             print(ultNomes[i])
 
+def escreveJson(ficheiro):
+    processos = {}
 
+    regex = re.compile(r"(?P<num>\d+)::(?P<ano>\d{4})\-(?P<mes>\d{2})-(?P<dia>\d{2})::(?P<nome_completo>[A-Za-z ]+)::(?P<primeiro_nome>[A-Za-z ]+)::(?P<ultimo_nome>[A-Za-z ]+)::(?P<extra>.*)::")
+    matches = regex.finditer(ficheiro.read())
+    regex_obs = re.compile(r"Doc.danificado.")
+
+    for match in matches:
+        if not regex_obs.search(match.group("extra")):
+            if match.group("num") in processos:
+                if match.groupdict() not in processos[match.group("num")]:
+                    processos[match.group("num")].append(match.groupdict())
+            else:
+                processos[match.group("num")] = [match.groupdict()]
+    listaProc = []
+    for proc in processos.values():
+        listaProc += proc
+    json.dump(listaProc[:20], open("output.json", "w"))
+
+def pretty_print(dict):
+    for key in dict.keys():
+        print(f'{key} '+ ' '*(25-len(key)) + f'| {str(dict[key])}')
+
+def procuraRelacionamentos(ficheiro):
+    conta = {}
+    for line in ficheiro.readlines():
+        exp = re.search(r"[a-zA-Z ]*,([a-zA-Z\s]*)\.[ ]*Proc\.\d+\.", line)
+        if exp != None:
+            grupo = exp.group(1)
+            if grupo not in conta:
+                conta[grupo] = 0
+            conta[grupo] += 1
+    pretty_print(conta)
 main()
