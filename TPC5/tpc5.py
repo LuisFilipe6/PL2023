@@ -3,6 +3,7 @@ import sys
 
 #0 => pousada
 #1 => LEVANTADA
+#2 => IN CALL
 #500 => ERRO
 
 class Telefone:
@@ -34,23 +35,57 @@ class Telefone:
         cents = self.dinheiroAtual%100
         return f'{euros:0d}e{cents:02d}c'
 
+    def gastaDinheiro(self, valor):
+        if self.dinheiroAtual - valor > 0:
+            self.dinheiroAtual -= valor
+            return True
+        return False
+
     def handle_chamada(self, chamada):
-        print("OI")
+        numero = chamada.replace("T=", "")
+
+        handle_loc = re.search("\d*", numero)
+        handle_int = re.search("00\d*", numero)
+        if handle_int:
+            if self.gastaDinheiro(150):
+                status = 2
+                return "saldo = " + self.getSaldo()
+            else:
+                return "Não dispõe de dinheiro para efetuar a chamada."
+        if handle_loc and len(handle_loc.group(0)) == 9:
+            handle_loc = handle_loc.group(0)
+            print(handle_loc[:4])
+            if (handle_loc[:3] == "601" or handle_loc[:3] == "641") and not self.gastaDinheiro(10):
+                return "Esse número não é permitido neste telefone. Queira discar novo número!"
+            if handle_loc[:3] == "808" and not self.gastaDinheiro(10):
+                return "Não dispõe de dinheiro para efetuar a chamada."
+            if handle_loc[:1] == "2" and not self.gastaDinheiro(25):
+                return "Não dispõe de dinheiro para efetuar a chamada."
+            status = 2
+            return "saldo = " + self.getSaldo()
+        return "Esse número não é permitido neste telefone. Queira discar novo número!"
+
+    def handle_levantar(self):
+        if self.status != 1:
+            self.status = 1
+            return "Introduza moedas."
+
+    def handle_pousar(self):
+        self.status = 0
+        return f'troco={self.getSaldo()}; Volte sempre!'
 
     def handle_input(self, input):
         output = "maq: ERRO"
         if re.match("T=\d+", input):
             output = self.handle_chamada(input)
-            # Parse chamada
         if re.match("MOEDA \d*[ce]", input):
             output = self.handle_moedas(input)
-            # Parse moedas
         if input == "DINHEIRO":
             print(dinheiroAtual)
         if input == "LEVANTAR":
-            statusMaquina = LEVANTADA
+            output = self.handle_levantar()
         if input == "POUSAR":
-            statusMaquina = POUSADA
+            output = self.handle_pousar()
         if input == "ABORTAR":
             print("ABORTAR")
             # Parse abortar
