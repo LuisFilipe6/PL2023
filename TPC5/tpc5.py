@@ -35,6 +35,36 @@ class Telefone:
         cents = self.dinheiroAtual%100
         return f'{euros:0d}e{cents:02d}c'
 
+    def getTroco(self):
+        restante = self.dinheiroAtual
+        moedas = {'2e': 0, '1e': 0, '50c': 0, '20c': 0, '10c': 0, '5c': 0, '2c': 0, '1c': 0}
+        while restante > 0:
+            if restante >= 200:
+                moedas['2e'] += 1
+                restante -= 200
+            if restante >= 100:
+                moedas['1e'] += 1
+                restante -= 100
+            if restante >= 50:
+                moedas['50c'] += 1
+                restante -= 50
+            if restante >= 20:
+                moedas['20c'] += 1
+                restante -= 20
+            if restante >= 10:
+                moedas['10c'] += 1
+                restante -= 10
+            if restante >= 5:
+                moedas['5c'] += 1
+                restante -= 5
+            if restante >= 2:
+                moedas['2c'] += 1
+                restante -= 2
+            if restante >= 1:
+                moedas['1c'] += 1
+                restante -= 1
+        return ','.join([str(value) + "x" + str(key) for key,value in moedas.items() if value > 0])
+
     def gastaDinheiro(self, valor):
         if self.dinheiroAtual - valor > 0:
             self.dinheiroAtual -= valor
@@ -72,7 +102,7 @@ class Telefone:
 
     def handle_pousar(self):
         self.status = 0
-        return f'troco={self.getSaldo()}; Volte sempre!'
+        return f'troco={self.getTroco()}; Volte sempre!'
 
     def handle_input(self, input):
         output = "maq: ERRO"
@@ -88,7 +118,6 @@ class Telefone:
             output = self.handle_pousar()
         if input == "ABORTAR":
             print("ABORTAR")
-            # Parse abortar
         return f'maq: "{output}"'
 
 def main():
